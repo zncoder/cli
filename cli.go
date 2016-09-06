@@ -27,15 +27,22 @@ func Usage(args ...interface{}) {
 	fmt.Fprintf(os.Stderr, "ops: %v\n", kk)
 }
 
-func ParseFlag(onFlagParsed ...func()) {
+func ParseFlag(onFlagParsed ...func() bool) {
 	flag.Parse()
 
 	for _, fn := range onFlagParsed {
-		fn()
+		if !fn() {
+			flag.Usage()
+			os.Exit(2)
+		}
 	}
 }
 
 func findOp(op string) (fn func(), ok bool) {
+	if v, ok := ops[op]; ok {
+		return v, true
+	}
+
 	for k, v := range ops {
 		if !strings.HasPrefix(k, op) {
 			continue
